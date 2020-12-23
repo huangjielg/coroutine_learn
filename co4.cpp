@@ -14,21 +14,26 @@
 using namespace std;
 class function_depth
 {
-public :
+public:
 	static int depth;
-	function_depth(){
-		depth++;	
+	function_depth()
+	{
+		depth++;
 	}
-	~function_depth(){
+	~function_depth()
+	{
 		depth--;
 	}
 };
-int function_depth::depth=0;
+int function_depth::depth = 0;
 #define DUMP_FUNCTION()                                                                  \
-	function_depth __fd;																 \
+	function_depth __fd;                                                                 \
 	do                                                                                   \
 	{                                                                                    \
-		for(int i=0;i<function_depth::depth;i++){ std::cout<<'\t';}						 \
+		for (int i = 0; i < function_depth::depth; i++)                                  \
+		{                                                                                \
+			std::cout << '\t';                                                           \
+		}                                                                                \
 		std::cout << " Function:" << __FUNCTION__ << "  Line:" << __LINE__ << std::endl; \
 	} while (0)
 int promise_alloc = 0;
@@ -51,7 +56,7 @@ struct task
 			DUMP_FUNCTION();
 			return {};
 		}
-		auto final_suspend() noexcept
+		auto final_suspend() noexcept  
 		{
 			DUMP_FUNCTION();
 			struct final_awaiter
@@ -99,6 +104,7 @@ struct task
 			// sz is NOT equal to sizeof(promise_type)
 			// but size of all state objects of the coroutine (include promise )
 			DUMP_FUNCTION();
+			std::cout<<"operator new for promise:"<<sz<<std::endl;
 			promise_alloc++;
 			return malloc(sz);
 		}
@@ -163,15 +169,15 @@ struct task
 task<int> co1(int a)
 {
 
-
 	// Promise p = new Promise();
 	// R = p.get_return_object() ;
 	// co_await p.initial_suspend();
 	//try {
-	//for (int i = 0; i < 3; i++) {
-	DUMP_FUNCTION();
-	co_yield a * 2;
-	//}
+		//for (int i = 0; i < 3; i++) {
+			DUMP_FUNCTION();
+			co_yield a * 2;
+			co_return a*3;
+		//}
 	//co_return 4;
 	//}
 	//catch(...)
