@@ -5,11 +5,12 @@ namespace cpp_test
     template <class T>
     struct task
     {
-
+        
         struct promise_type
         {
             T value;
             std::coroutine_handle<> awaitingCoroutine;
+            
             task get_return_object()
             {
                 return {*this};
@@ -56,7 +57,7 @@ namespace cpp_test
             void unhandled_exception()
             {
             }
-            promise_type() : value(0) {}
+            promise_type() : value() {}
             ~promise_type()
             {
             }
@@ -95,10 +96,9 @@ namespace cpp_test
                     m_promise.awaitingCoroutine = awaitingCoroutine;
                     return true;
                 }
-                T &await_resume() noexcept
+                T&&await_resume() noexcept
                 {
-
-                    return m_promise.value;
+                    return std::move(m_promise.value);
                 }
                 task_awaiter(promise_type &p) : m_promise(p)
                 {
@@ -124,6 +124,9 @@ namespace cpp_test
         }
         promise_type &m_promise;
         std::coroutine_handle<> awaitingCoroutine;
+        bool done() {
+            return std::coroutine_handle<promise_type>::from_promise(m_promise).done();
+        }
     };
 } // namespace cpp_test
 #endif

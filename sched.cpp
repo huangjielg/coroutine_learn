@@ -26,15 +26,14 @@ VOID  Scheduler::DeInit()
     CloseHandle(hIoComplete);hIoComplete=INVALID_HANDLE_VALUE;
 }
 
-void Scheduler::Queue(std::function<void()> f)
+void Scheduler::Queue(IoCompleteLamda &lo)
 {
-    auto a = new IoCompleteLamda(f);
-    memset(&a->o, 0, sizeof(a->o));
+ 
     ::PostQueuedCompletionStatus(
         hIoComplete,
         0,
         0,
-        &a->o);
+        &lo.o);
 }
 
  INT Scheduler::ProcessOneEvent(DWORD   dwMilliseconds)
@@ -52,10 +51,21 @@ void Scheduler::Queue(std::function<void()> f)
      )
      {
           IoCompleteLamda *p=(IoCompleteLamda*)po;
-          p->m_f();
-          delete p;
+          p->do_callback();
           return TRUE;
      }else{
          return FALSE;
      }
+ }
+
+
+  BOOL  Scheduler::BindFile(HANDLE hFile)
+ {
+     if( CreateIoCompletionPort(hFile,hIoComplete,0,0)==NULL)
+        {
+            return FALSE;
+        }
+        else{
+            return TRUE;
+        }
  }
